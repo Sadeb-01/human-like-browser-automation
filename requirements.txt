@@ -3,9 +3,9 @@ playwright==1.40.0
 pillow==10.1.0
 python-dotenv==1.0.0
 
-# Phase 2: DeepSeek-VL2 Integration (will be added)
-# requests==2.31.0
-# openai==1.3.0
+# Phase 2: DeepSeek-VL2 Integration
+requests==2.31.0
+openai==1.3.0
 
 # Phase 3: OS-Level Input Simulation (will be added)
 # pyautogui==0.9.53
