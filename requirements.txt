@@ -7,9 +7,9 @@ python-dotenv==1.0.0
 requests==2.31.0
 openai==1.3.0
 
-# Phase 3: OS-Level Input Simulation (will be added)
-# pyautogui==0.9.53
-# pynput==1.7.6
+# Phase 3: OS-Level Input Simulation
+pyautogui==0.9.53
+pynput==1.7.6
 
 # Phase 4: Anti-Detection & Stealth (will be added)
 # curl-cffi==0.5.9
