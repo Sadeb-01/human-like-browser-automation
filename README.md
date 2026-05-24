@@ -21,7 +21,30 @@ The system is built on a multi-layered architecture:
 
 ## Current Status
 
-**Phase 1 - In Progress:** Setting up basic browser control with Playwright and screenshot capture functionality.
+All core development phases (Phase 1-5) are **Completed**.
+
+## Feature Roadmap
+
+This section outlines the current status of key features and planned upgrades.
+
+| Feature | Status | Notes |
+| :--- | :--- | :--- |
+| **Core System (Phases 1-5)** | ✅ Completed | All foundational components are implemented and integrated. |
+| **Virtual Display Integration** | ⬜ To Do | Integration with Xvfb/VNC for VPS deployment. |
+| **Docker Containerization** | ⬜ To Do | Create Dockerfiles for easy deployment. |
+| **Advanced Proxy Management** | ⬜ To Do | Implement proxy rotation and health checks. |
+| **TLS/HTTP2 Fingerprint Rotation** | ✅ Completed | Implemented via `curl_cffi` in Phase 4. |
+| **Canvas/WebGL Noise** | ⬜ To Do | Advanced hardware fingerprint spoofing. |
+| **Font Fingerprint Randomization** | ⬜ To Do | Further anti-detection measures. |
+| **Self-Correction Logic** | ⬜ To Do | AI-driven error recovery and adaptive strategies. |
+| **Local VLM Hosting** | ⬜ To Do | Option to run DeepSeek-VL2 locally for performance/cost. |
+| **OpenClaw Full Integration** | ✅ Completed | Orchestration framework is in place. |
+| **Comprehensive Test Suite** | ⬜ To Do | Automated tests for reliability and regression. |
+| **CI/CD Pipeline** | ⬜ To Do | Automated build, test, and deployment. |
+
+## Deployment Guide
+
+For detailed instructions on deploying and upgrading this system to a production environment, including infrastructure requirements and advanced stealth techniques, please refer to the [DEPLOYMENT.md](docs/DEPLOYMENT.md) file in the `docs/` directory.
 
 ## Installation
 
