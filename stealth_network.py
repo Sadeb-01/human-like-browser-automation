@@ -9,8 +9,8 @@ import random
 from typing import Optional, Dict, Any
 
 from curl_cffi import requests
-from .logger import system_logger
-from .config import DEFAULT_CONFIG
+from logger import system_logger
+from config import DEFAULT_CONFIG
 
 
 class StealthNetwork:

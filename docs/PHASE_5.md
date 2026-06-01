@@ -29,18 +29,33 @@ The orchestrator is designed to be compatible with the **OpenClaw** framework. O
 ## Usage
 
 ```python
+import asyncio
 from orchestrator import HumanAutomationOrchestrator
 
-orchestrator = HumanAutomationOrchestrator()
+async def main():
+    orchestrator = HumanAutomationOrchestrator()
+    try:
+        await orchestrator.startup()
+        # Example task - uncomment and modify as needed
+        # await orchestrator.perform_task(
+        #     "Navigate to the search page, type \'AI Agents\', and click the first result.",
+        #     "https://www.example.com"
+        # )
+    finally:
+        await orchestrator.shutdown()
 
-async def run():
-    await orchestrator.startup()
-    await orchestrator.perform_task(
-        "Navigate to the search page, type 'AI Agents', and click the first result.",
-        "https://www.example.com"
-    )
-    await orchestrator.shutdown()
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
+
+**Note on `pyautogui` and Headless Environments:**
+
+The `pyautogui` library, used for OS-level input simulation, relies on a graphical display server (X server) and `tkinter`. In headless environments (like many CI/CD pipelines or remote servers), this dependency may cause issues. If you encounter errors related to `Xlib` or `tkinter`, you may need to:
+
+1.  Install a virtual display server (e.g., Xvfb) and run your application within it.
+2.  Install `tkinter` (`sudo apt-get install python3-tk python3-dev` on Debian/Ubuntu).
+
+For full functionality of the `InputSimulator`, a graphical environment is required. If running in a headless setup, consider disabling or mocking `InputSimulator` functionality, or ensure a virtual display is configured.
 
 ## Summary of the Completed System
 

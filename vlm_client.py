@@ -13,8 +13,8 @@ from typing import List, Dict, Any, Optional
 
 import requests
 from openai import OpenAI
-from .config import DEFAULT_CONFIG
-from .logger import system_logger
+from config import DEFAULT_CONFIG
+from logger import system_logger
 
 
 class VLMClient:

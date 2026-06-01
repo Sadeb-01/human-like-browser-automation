@@ -9,12 +9,12 @@ import asyncio
 from pathlib import Path
 from typing import Optional
 
-from .browser_controller import BrowserController
-from .vlm_client import VLMClient
-from .input_simulator import InputSimulator
-from .stealth_network import StealthNetwork
-from .logger import system_logger
-from .config import DEFAULT_CONFIG
+from browser_controller import BrowserController
+from vlm_client import VLMClient
+from input_simulator import InputSimulator
+from stealth_network import StealthNetwork
+from logger import system_logger
+from config import DEFAULT_CONFIG
 
 
 class HumanAutomationOrchestrator:
@@ -24,7 +24,13 @@ class HumanAutomationOrchestrator:
     
     def __init__(self, config=DEFAULT_CONFIG):
         self.config = config
-        self.body = BrowserController(config=config.browser)
+        self.body = BrowserController(
+            headless=config.browser.headless,
+            browser_type=config.browser.browser_type,
+            viewport_width=config.browser.viewport_width,
+            viewport_height=config.browser.viewport_height,
+            disable_blink_features=config.browser.disable_automation_features
+        )
         self.brain = VLMClient(config=config.vlm)
         self.hands = InputSimulator(config=config.input_config)
         self.identity = StealthNetwork(config=config.anti_detection)

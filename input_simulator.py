@@ -11,8 +11,8 @@ import math
 from typing import Tuple, List, Optional
 
 import pyautogui
-from .logger import system_logger
-from .config import DEFAULT_CONFIG
+from logger import system_logger
+from config import DEFAULT_CONFIG
 
 
 class InputSimulator:

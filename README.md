@@ -52,7 +52,17 @@ For detailed instructions on deploying and upgrading this system to a production
 git clone https://github.com/Sadeb-01/human-like-browser-automation.git
 cd human-like-browser-automation
 pip install -r requirements.txt
+playwright install chromium
 ```
+
+**Note on `pyautogui` and Headless Environments:**
+
+The `pyautogui` library, used for OS-level input simulation, relies on a graphical display server (X server) and `tkinter`. In headless environments (like many CI/CD pipelines or remote servers), this dependency may cause issues. If you encounter errors related to `Xlib` or `tkinter`, you may need to:
+
+1.  Install a virtual display server (e.g., Xvfb) and run your application within it.
+2.  Install `tkinter` (`sudo apt-get install python3-tk python3-dev` on Debian/Ubuntu).
+
+For basic functionality without OS-level input simulation, you can comment out or remove `pyautogui` and `pynput` from `requirements.txt` and related code sections, though this will reduce the "human-like" aspect of the automation.
 
 ## Requirements
 
