@@ -29,6 +29,7 @@ class BrowserController:
         viewport_height: int = 1080,
         user_agent: Optional[str] = None,
         disable_blink_features: bool = True,
+        storage_state_path: Optional[str] = None,
     ):
         """
         Initialize the browser controller.
@@ -47,6 +48,7 @@ class BrowserController:
         self.viewport_height = viewport_height
         self.user_agent = user_agent or self._get_default_user_agent()
         self.disable_blink_features = disable_blink_features
+        self.storage_state_path = Path(storage_state_path) if storage_state_path else None
         
         self.browser: Optional[Browser] = None
         self.context: Optional[BrowserContext] = None
@@ -94,6 +96,9 @@ class BrowserController:
             "locale": "en-US",
             "timezone_id": "America/New_York",
         }
+        if self.storage_state_path and self.storage_state_path.exists():
+            context_args["storage_state"] = str(self.storage_state_path)
+            print(f"✓ Loading browser storage state from {self.storage_state_path}")
         
         self.context = await self.browser.new_context(**context_args)
         
@@ -207,6 +212,8 @@ class BrowserController:
         if self.playwright:
             await self.playwright.stop()
         
+        if self.storage_state_path:
+            await self.save_storage_state()
         print("✓ Browser closed")
 
 
@@ -226,14 +233,28 @@ async def main():
         
         # Get accessibility tree
         accessibility_tree = await controller.get_accessibility_tree()
-        print(f"✓ Found {len(accessibility_tree['elements'])} elements in accessibility tree")
+        print(f"✓ Found {len(accessibility_tree["elements"])} elements in accessibility tree")
         
         # Print first few elements
-        for elem in accessibility_tree['elements'][:5]:
-            print(f"  - {elem['tag']} ({elem['role']}): {elem['text'][:50]}")
+        for elem in accessibility_tree["elements"][:5]:
+            print(f"  - {elem["tag"]} ({elem["role"]}): {elem["text"][:50]}")
         
     finally:
         await controller.close()
+
+    async def save_storage_state(self):
+        """
+        Saves the current browser context storage state (cookies, localStorage) to a file.
+        """
+        if not self.context:
+            raise RuntimeError("Browser context not initialized. Call initialize() first.")
+        if not self.storage_state_path:
+            print("No storage_state_path configured. Skipping saving storage state.")
+            return
+        
+        self.storage_state_path.parent.mkdir(parents=True, exist_ok=True)
+        await self.context.storage_state(path=str(self.storage_state_path))
+        print(f"✓ Browser storage state saved to {self.storage_state_path}")
 
 
 if __name__ == "__main__":
