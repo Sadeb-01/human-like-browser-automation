@@ -56,7 +56,9 @@ class TaskMemoryManager:
         current_step: Optional[str] = None,
         status: Optional[str] = None,
         last_error: Optional[str] = None,
-        browser_state_path: Optional[str] = None
+        browser_state_path: Optional[str] = None,
+        history: Optional[List[str]] = None,
+        last_url: Optional[str] = None
     ):
         """
         Updates specific fields in the task memory.
@@ -66,7 +68,9 @@ class TaskMemoryManager:
             "current_step": "start",
             "status": "new",
             "last_error": None,
-            "browser_state_path": None
+            "browser_state_path": None,
+            "history": [],
+            "last_url": None
         }
 
         if current_step is not None:
@@ -77,6 +81,10 @@ class TaskMemoryManager:
             memory["last_error"] = last_error
         if browser_state_path is not None:
             memory["browser_state_path"] = browser_state_path
+        if history is not None:
+            memory["history"] = history
+        if last_url is not None:
+            memory["last_url"] = last_url
 
         self.save_task_memory(task_name, memory)
 
