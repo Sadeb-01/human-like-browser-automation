@@ -65,6 +65,9 @@ class AntiDetectionConfig:
     enable_stealth_mode: bool = False
     use_residential_proxy: bool = False
     proxy_url: Optional[str] = None
+    proxy_pool: Optional[List[str]] = None
+    proxy_health_check_url: str = "https://api.ipify.org"
+    proxy_health_check_interval: int = 300  # in seconds
     randomize_fingerprint: bool = False
     spoof_hardware_info: bool = False
     randomize_timing: bool = False
@@ -112,6 +115,9 @@ class SystemConfig:
                 enable_stealth_mode=os.getenv("ENABLE_STEALTH_MODE", "false").lower() == "true",
                 use_residential_proxy=os.getenv("USE_RESIDENTIAL_PROXY", "false").lower() == "true",
                 proxy_url=os.getenv("PROXY_URL"),
+                proxy_pool=os.getenv("PROXY_POOL", "").split(",") if os.getenv("PROXY_POOL") else None,
+                proxy_health_check_url=os.getenv("PROXY_HEALTH_CHECK_URL", "https://api.ipify.org"),
+                proxy_health_check_interval=int(os.getenv("PROXY_HEALTH_CHECK_INTERVAL", "300")),
             ),
             memory=MemoryConfig(
                 memory_dir=os.getenv("MEMORY_DIR", "./task_memory"),

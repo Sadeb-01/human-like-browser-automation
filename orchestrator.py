@@ -45,6 +45,13 @@ class HumanAutomationOrchestrator:
     async def startup(self):
         """Initialize all components."""
         await self.body.initialize()
+        
+        # Perform initial proxy health checks if pool is configured
+        if self.identity.proxy_pool:
+            system_logger.info("Performing initial proxy health checks...")
+            for proxy in self.identity.proxy_pool:
+                await self.identity.check_proxy_health(proxy)
+        
         system_logger.info("System startup complete.")
 
     async def perform_task(self, task_name: str, task_description: str, start_url: str, max_retries: int = 3):

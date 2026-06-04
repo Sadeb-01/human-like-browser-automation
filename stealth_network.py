@@ -23,18 +23,64 @@ class StealthNetwork:
     def __init__(self, config=DEFAULT_CONFIG.anti_detection):
         self.config = config
         self.session = requests.Session()
-        system_logger.info("Stealth Network module initialized.")
+        self.proxy_pool = config.proxy_pool or ([config.proxy_url] if config.proxy_url else [])
+        self.active_proxy = config.proxy_url
+        self.bad_proxies = set()
+        system_logger.info(f"Stealth Network module initialized with {len(self.proxy_pool)} proxies.")
+
+    def rotate_proxy(self) -> Optional[str]:
+        """
+        Rotates to the next available proxy in the pool.
+        """
+        if not self.proxy_pool:
+            return None
+            
+        available_proxies = [p for p in self.proxy_pool if p not in self.bad_proxies]
+        if not available_proxies:
+            system_logger.warning("No healthy proxies available in the pool. Resetting bad proxies list.")
+            self.bad_proxies.clear()
+            available_proxies = self.proxy_pool
+            
+        self.active_proxy = random.choice(available_proxies)
+        system_logger.info(f"Rotated to proxy: {self.active_proxy}")
+        return self.active_proxy
+
+    async def check_proxy_health(self, proxy_url: str) -> bool:
+        """
+        Checks if a proxy is healthy by performing a simple request.
+        """
+        system_logger.info(f"Checking health for proxy: {proxy_url}")
+        try:
+            # Using a simple blocking request for health check
+            response = requests.get(
+                self.config.proxy_health_check_url,
+                proxies={"http": proxy_url, "https": proxy_url},
+                timeout=10
+            )
+            is_healthy = response.status_code == 200
+            if not is_healthy:
+                system_logger.warning(f"Proxy {proxy_url} failed health check with status {response.status_code}")
+                self.bad_proxies.add(proxy_url)
+            return is_healthy
+        except Exception as e:
+            system_logger.warning(f"Proxy {proxy_url} failed health check with error: {e}")
+            self.bad_proxies.add(proxy_url)
+            return False
 
     def get_proxy_settings(self) -> Optional[Dict[str, str]]:
         """
         Configure residential proxy settings.
         """
-        if not self.config.use_residential_proxy or not self.config.proxy_url:
+        if not self.config.use_residential_proxy:
+            return None
+            
+        proxy = self.active_proxy or self.rotate_proxy()
+        if not proxy:
             return None
             
         return {
-            "http": self.config.proxy_url,
-            "https": self.config.proxy_url
+            "http": proxy,
+            "https": proxy
         }
 
     def perform_stealth_request(
