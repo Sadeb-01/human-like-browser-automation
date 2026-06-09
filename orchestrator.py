@@ -66,7 +66,7 @@ class HumanAutomationOrchestrator:
         task_memory = self.memory_manager.load_task_memory(task_name)
 
         if task_memory and task_memory["status"] == "in-progress":
-            system_logger.info(f"Resuming task \'{task_name}\' from step: {task_memory["current_step"]}")
+            system_logger.info(f"Resuming task \'{task_name}\' from step: {task_memory['current_step']}")
             if task_memory["browser_state_path"] and Path(task_memory["browser_state_path"]).exists():
                 self.body.storage_state_path = Path(task_memory["browser_state_path"])
             await self.body.navigate_to(task_memory.get("last_url", start_url))
@@ -151,6 +151,9 @@ class HumanAutomationOrchestrator:
                 # 3. Act (Hands)
                 # Placeholder for coordinate parsing and execution
                 # In a real scenario, we would parse [x, y] from 'response'
+                # For now, we log the intended action
+                system_logger.info(f"Intended Action for step {step+1}: {response}")
+                
                 # self.hands.click_humanlike(parsed_x, parsed_y)
                 
                 await asyncio.sleep(2) # Natural pause between steps

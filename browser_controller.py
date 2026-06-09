@@ -201,6 +201,20 @@ class BrowserController:
             "elements": accessibility_data,
         }
     
+    async def save_storage_state(self):
+        """
+        Saves the current browser context storage state (cookies, localStorage) to a file.
+        """
+        if not self.context:
+            raise RuntimeError("Browser context not initialized. Call initialize() first.")
+        if not self.storage_state_path:
+            print("No storage_state_path configured. Skipping saving storage state.")
+            return
+        
+        self.storage_state_path.parent.mkdir(parents=True, exist_ok=True)
+        await self.context.storage_state(path=str(self.storage_state_path))
+        print(f"✓ Browser storage state saved to {self.storage_state_path}")
+
     async def close(self) -> None:
         """Close the browser and clean up resources."""
         if self.page:
@@ -233,28 +247,14 @@ async def main():
         
         # Get accessibility tree
         accessibility_tree = await controller.get_accessibility_tree()
-        print(f"✓ Found {len(accessibility_tree["elements"])} elements in accessibility tree")
+        print(f"✓ Found {len(accessibility_tree['elements'])} elements in accessibility tree")
         
         # Print first few elements
         for elem in accessibility_tree["elements"][:5]:
-            print(f"  - {elem["tag"]} ({elem["role"]}): {elem["text"][:50]}")
+            print(f"  - {elem['tag']} ({elem['role']}): {elem['text'][:50]}")
         
     finally:
         await controller.close()
-
-    async def save_storage_state(self):
-        """
-        Saves the current browser context storage state (cookies, localStorage) to a file.
-        """
-        if not self.context:
-            raise RuntimeError("Browser context not initialized. Call initialize() first.")
-        if not self.storage_state_path:
-            print("No storage_state_path configured. Skipping saving storage state.")
-            return
-        
-        self.storage_state_path.parent.mkdir(parents=True, exist_ok=True)
-        await self.context.storage_state(path=str(self.storage_state_path))
-        print(f"✓ Browser storage state saved to {self.storage_state_path}")
 
 
 if __name__ == "__main__":

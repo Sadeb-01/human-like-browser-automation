@@ -23,8 +23,16 @@ class StealthNetwork:
     def __init__(self, config=DEFAULT_CONFIG.anti_detection):
         self.config = config
         self.session = requests.Session()
-        self.proxy_pool = config.proxy_pool or ([config.proxy_url] if config.proxy_url else [])
-        self.active_proxy = config.proxy_url
+        
+        # Initialize proxy pool correctly
+        if config.proxy_pool:
+            self.proxy_pool = config.proxy_pool
+        elif config.proxy_url:
+            self.proxy_pool = [config.proxy_url]
+        else:
+            self.proxy_pool = []
+            
+        self.active_proxy = config.proxy_url if config.proxy_url else (self.proxy_pool[0] if self.proxy_pool else None)
         self.bad_proxies = set()
         system_logger.info(f"Stealth Network module initialized with {len(self.proxy_pool)} proxies.")
 

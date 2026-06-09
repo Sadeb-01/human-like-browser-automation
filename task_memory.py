@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 
 from logger import system_logger
 from config import DEFAULT_CONFIG
@@ -72,6 +72,10 @@ class TaskMemoryManager:
             "history": [],
             "last_url": None
         }
+        
+        # Ensure history exists if loading from an older memory file
+        if "history" not in memory:
+            memory["history"] = []
 
         if current_step is not None:
             memory["current_step"] = current_step
