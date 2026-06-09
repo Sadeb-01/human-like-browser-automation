@@ -102,28 +102,70 @@ class HumanAutomationOrchestrator:
                     "Analyze the screenshot and accessibility tree. \n"
                     "1. Provide a short summary of what you see.\n"
                     "2. Determine the next logical action to achieve the task.\n"
-                    "3. If you need to click something, provide coordinates [x, y].\n"
-                    "4. If the task is complete, say 'TASK_COMPLETE'.\n"
-                    "5. If you are stuck, explain why and suggest a recovery action."
+                    "3. Respond with a JSON object containing the action. Supported actions are:\n"
+                    "   - Click: {\"action\": \"click\", \"x\": <x_coordinate>, \"y\": <y_coordinate>}\n"
+                    "   - Type: {\"action\": \"type\", \"text\": \"<text_to_type>\"}\n"
+                    "   - Scroll: {\"action\": \"scroll\", \"direction\": \"up\"/\"down\", \"amount\": <scroll_amount>}\n"
+                    "   - Complete: {\"action\": \"complete\"}\n"
+                    "   - Error/Stuck: {\"action\": \"error\", \"message\": \"<error_message>\"}\n"
+                    "4. If the task is complete, use the 'complete' action.\n"
+                    "5. If you are stuck or encounter an error, use the 'error' action with a descriptive message."
                 )
                 
                 analysis = await self.brain.analyze_screenshot(
                     screenshot_path, prompt, accessibility_tree
                 )
-                response = analysis["raw_response"]
-                system_logger.info(f"AI Decision: {response[:100]}...")
+                raw_response = analysis["raw_response"]
+                system_logger.info(f"AI Raw Response: {raw_response[:100]}...")
 
-                # Self-Correction: Check if AI is stuck or reporting an error
-                if "error" in response.lower() or "stuck" in response.lower() or "not found" in response.lower():
-                    system_logger.warning(f"AI reported an issue: {response}. Initiating self-correction...")
-                    
-                    # OCR Fallback: Try to find text if VLM is struggling
-                    if "text" in response.lower():
-                        system_logger.info("VLM struggling with text. Attempting OCR fallback...")
-                        # This is a simplified fallback; in a real scenario, we'd parse the target text from the response
-                        # ocr_results = self.ocr_engine.extract_text(screenshot_path)
-                        # system_logger.info(f"OCR Fallback Results: {ocr_results[:2]}")
+                action_data = self.brain.parse_vlm_response(raw_response)
+                system_logger.info(f"Parsed Action: {action_data}")
 
+                # Update task memory with current step, URL, and AI history
+                history = current_memory.get("history", [])
+                history.append(f"Step {step+1}: {raw_response[:100]}")
+                self.memory_manager.update_task_progress(
+                    task_name, 
+                    current_step=f"step_{step+1}", 
+                    last_url=self.body.page.url if self.body.page else None,
+                    history=history[-5:] # Keep last 5 steps for context
+                )
+
+                # 3. Act (Hands)
+                action_type = action_data.get("action")
+
+                if action_type == "click":
+                    x = action_data.get("x")
+                    y = action_data.get("y")
+                    if x is not None and y is not None:
+                        self.hands.click_humanlike(x, y)
+                    else:
+                        system_logger.error(f"Click action missing coordinates: {action_data}")
+                        raise ValueError("Click action requires x and y coordinates.")
+                elif action_type == "type":
+                    text = action_data.get("text")
+                    if text is not None:
+                        self.hands.type_humanlike(text)
+                    else:
+                        system_logger.error(f"Type action missing text: {action_data}")
+                        raise ValueError("Type action requires text to type.")
+                elif action_type == "scroll":
+                    direction = action_data.get("direction")
+                    amount = action_data.get("amount")
+                    if direction == "up":
+                        self.hands.scroll_humanlike(amount)
+                    elif direction == "down":
+                        self.hands.scroll_humanlike(-amount)
+                    else:
+                        system_logger.error(f"Scroll action missing direction or invalid: {action_data}")
+                        raise ValueError("Scroll action requires 'up' or 'down' direction.")
+                elif action_type == "complete":
+                    system_logger.info("Task completed successfully by VLM.")
+                    self.memory_manager.update_task_progress(task_name, status="completed", current_step="end")
+                    break
+                elif action_type == "error":
+                    error_message = action_data.get("message", "Unknown VLM error.")
+                    system_logger.warning(f"AI reported an issue: {error_message}. Initiating self-correction...")
                     if retry_count < max_retries:
                         retry_count += 1
                         system_logger.info(f"Retrying step {step+1} (Attempt {retry_count}/{max_retries})...")
@@ -131,30 +173,10 @@ class HumanAutomationOrchestrator:
                         continue # Retry the same step
                     else:
                         system_logger.error("Max retries reached for self-correction. Task failed.")
-                        raise Exception(f"Self-correction failed after {max_retries} retries: {response}")
-
-                if "TASK_COMPLETE" in response:
-                    system_logger.info("Task completed successfully.")
-                    self.memory_manager.update_task_progress(task_name, status="completed", current_step="end")
-                    break
-                
-                # Update task memory with current step, URL, and AI history
-                history = current_memory.get('history', [])
-                history.append(f"Step {step+1}: {response[:100]}")
-                self.memory_manager.update_task_progress(
-                    task_name, 
-                    current_step=f"step_{step+1}", 
-                    last_url=self.body.page.url if self.body.page else None,
-                    history=history[-5:] # Keep last 5 steps for context
-                )
-                    
-                # 3. Act (Hands)
-                # Placeholder for coordinate parsing and execution
-                # In a real scenario, we would parse [x, y] from 'response'
-                # For now, we log the intended action
-                system_logger.info(f"Intended Action for step {step+1}: {response}")
-                
-                # self.hands.click_humanlike(parsed_x, parsed_y)
+                        raise Exception(f"Self-correction failed after {max_retries} retries: {error_message}")
+                else:
+                    system_logger.error(f"Unknown action type received from VLM: {action_type}. Raw response: {raw_response}")
+                    raise ValueError(f"Unknown action type: {action_type}")
                 
                 await asyncio.sleep(2) # Natural pause between steps
 

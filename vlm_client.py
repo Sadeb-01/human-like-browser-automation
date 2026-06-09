@@ -13,6 +13,7 @@ from typing import List, Dict, Any, Optional
 
 import requests
 from openai import OpenAI
+import re
 from config import DEFAULT_CONFIG
 from logger import system_logger
 
@@ -107,18 +108,47 @@ class VLMClient:
             system_logger.error(f"VLM API request failed: {str(e)}")
             raise
 
-    def parse_coordinates(self, vlm_response: str) -> List[Dict[str, Any]]:
+    def parse_vlm_response(self, vlm_response: str) -> Dict[str, Any]:
         """
-        Parse bounding box coordinates from the VLM's natural language response.
-        
-        DeepSeek-VL2 often returns coordinates in a specific format like [x, y, width, height]
-         or as normalized points. This method should be adapted based on the specific
-         output format of the model being used.
+        Parse the structured JSON response from the VLM.
+        Expected format: {\"action\": \"click\", \"x\": <x>, \"y\": <y>}
+        or {\"action\": \"type\", \"text\": \"<text>\"}
+        or {\"action\": \"scroll\", \"direction\": \"up\"/\"down\", \"amount\": <amount>}
+        or {\"action\": \"complete\"}
+        or {\"action\": \"error\", \"message\": \"<message>\"}
         """
-        # Placeholder for coordinate parsing logic
-        # In a real implementation, this would use regex or structured output parsing
-        system_logger.debug(f"Parsing coordinates from: {vlm_response[:100]}...")
-        return []
+        system_logger.debug(f"Parsing VLM response: {vlm_response[:200]}...")
+        try:
+            # Attempt to find a JSON object in the response
+            # The VLM might embed the JSON within other text, so we need to extract it
+            json_start = vlm_response.find('{')
+            json_end = vlm_response.rfind('}')
+            
+            if json_start != -1 and json_end != -1 and json_end > json_start:
+                json_str = vlm_response[json_start : json_end + 1]
+                action_data = json.loads(json_str)
+                
+                # Validate the action structure
+                if "action" not in action_data:
+                    raise ValueError("Missing 'action' key in VLM response JSON.")
+                
+                return action_data
+            else:
+                # If no JSON is found, try to infer simple actions or return an error
+                if "TASK_COMPLETE" in vlm_response:
+                    return {"action": "complete"}
+                elif "error" in vlm_response.lower() or "stuck" in vlm_response.lower():
+                    return {"action": "error", "message": vlm_response}
+                else:
+                    # Fallback for unstructured responses, log and return a generic error
+                    system_logger.warning(f"VLM response not in expected JSON format: {vlm_response}")
+                    return {"action": "error", "message": "VLM response not parsable as JSON or simple action."}
+        except json.JSONDecodeError as e:
+            system_logger.error(f"JSON parsing failed: {e}. Raw response: {vlm_response}")
+            return {"action": "error", "message": f"JSON parsing failed: {e}"}
+        except ValueError as e:
+            system_logger.error(f"VLM response validation failed: {e}. Raw response: {vlm_response}")
+            return {"action": "error", "message": f"VLM response validation failed: {e}"}
 
 
 async def example_vision_task():

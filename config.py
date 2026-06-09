@@ -6,12 +6,13 @@ This module handles all configuration settings across different phases.
 
 import os
 from dataclasses import dataclass
-from typing import Optional
-from dotenv import load_dotenv
-
-
-# Load environment variables from .env file
-load_dotenv()
+from typing import Optional, List
+try:
+    from dotenv import load_dotenv
+    # Load environment variables from .env file
+    load_dotenv()
+except ImportError:
+    pass
 
 
 @dataclass
