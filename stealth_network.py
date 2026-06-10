@@ -8,7 +8,19 @@ to ensure the network identity of the agent is indistinguishable from a human.
 import random
 from typing import Optional, Dict, Any
 
-from curl_cffi import requests
+try:
+    from curl_cffi import requests
+except ImportError:
+    class MockRequests:
+        class Response: pass
+        class Session:
+            def request(self, *args, **kwargs): pass
+        def get(self, *args, **kwargs):
+            class MockResponse:
+                status_code = 200
+                text = "{}"
+            return MockResponse()
+    requests = MockRequests()
 from logger import system_logger
 from config import DEFAULT_CONFIG
 

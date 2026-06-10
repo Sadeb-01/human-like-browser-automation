@@ -27,8 +27,8 @@ def test_parsing():
         },
         {
             "name": "Error Action",
-            "response": "Something went wrong. {\"action\": \"error\", \"message\": \"Button not found\"}",
-            "expected": {"action": "error", "message": "Button not found"}
+            "response": "Something went wrong. {\"action\": \"error\", \"message\": \"Button not found\", \"target_text\": \"Login\"}",
+            "expected": {"action": "error", "message": "Button not found", "target_text": "Login"}
         },
         {
             "name": "Fallback Complete",
@@ -38,7 +38,12 @@ def test_parsing():
         {
             "name": "Fallback Error",
             "response": "I am stuck and cannot find the element.",
-            "expected": {"action": "error", "message": "I am stuck and cannot find the element."}
+            "expected": {"action": "error", "message": "I am stuck and cannot find the element.", "target_text": None}
+        },
+        {
+            "name": "Fallback Error with Target Text",
+            "response": "I am stuck. target_text\": \"Submit\"",
+            "expected": {"action": "error", "message": "I am stuck. target_text\": \"Submit\"", "target_text": "Submit"}
         }
     ]
     

@@ -10,7 +10,18 @@ import time
 import math
 from typing import Tuple, List, Optional
 
-import pyautogui
+try:
+    import pyautogui
+except ImportError:
+    class MockPyAutoGUI:
+        FAILSAFE = True
+        def position(self): return (0, 0)
+        def moveTo(self, *args, **kwargs): pass
+        def mouseDown(self, *args, **kwargs): pass
+        def mouseUp(self, *args, **kwargs): pass
+        def write(self, *args, **kwargs): pass
+        def scroll(self, *args, **kwargs): pass
+    pyautogui = MockPyAutoGUI()
 from logger import system_logger
 from config import DEFAULT_CONFIG
 

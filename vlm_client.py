@@ -115,7 +115,7 @@ class VLMClient:
         or {\"action\": \"type\", \"text\": \"<text>\"}
         or {\"action\": \"scroll\", \"direction\": \"up\"/\"down\", \"amount\": <amount>}
         or {\"action\": \"complete\"}
-        or {\"action\": \"error\", \"message\": \"<message>\"}
+        or {\"action\": \"error\", \"message\": \"<message>\", \"target_text\": \"<optional_text_for_ocr_fallback>\"}
         """
         system_logger.debug(f"Parsing VLM response: {vlm_response[:200]}...")
         try:
@@ -138,7 +138,10 @@ class VLMClient:
                 if "TASK_COMPLETE" in vlm_response:
                     return {"action": "complete"}
                 elif "error" in vlm_response.lower() or "stuck" in vlm_response.lower():
-                    return {"action": "error", "message": vlm_response}
+                    # Attempt to extract target_text if present in the unstructured error message
+                    match = re.search(r"target_text\":\s*\"(.*?)\"", vlm_response)
+                    target_text = match.group(1) if match else None
+                    return {"action": "error", "message": vlm_response, "target_text": target_text}
                 else:
                     # Fallback for unstructured responses, log and return a generic error
                     system_logger.warning(f"VLM response not in expected JSON format: {vlm_response}")

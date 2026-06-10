@@ -107,7 +107,7 @@ class HumanAutomationOrchestrator:
                     "   - Type: {\"action\": \"type\", \"text\": \"<text_to_type>\"}\n"
                     "   - Scroll: {\"action\": \"scroll\", \"direction\": \"up\"/\"down\", \"amount\": <scroll_amount>}\n"
                     "   - Complete: {\"action\": \"complete\"}\n"
-                    "   - Error/Stuck: {\"action\": \"error\", \"message\": \"<error_message>\"}\n"
+                    "   - Error/Stuck: {\"action\": \"error\", \"message\": \"<error_message>\", \"target_text\": \"<optional_text_for_ocr_fallback>\"}\n"
                     "4. If the task is complete, use the 'complete' action.\n"
                     "5. If you are stuck or encounter an error, use the 'error' action with a descriptive message."
                 )
@@ -165,7 +165,24 @@ class HumanAutomationOrchestrator:
                     break
                 elif action_type == "error":
                     error_message = action_data.get("message", "Unknown VLM error.")
+                    target_text = action_data.get("target_text")
                     system_logger.warning(f"AI reported an issue: {error_message}. Initiating self-correction...")
+
+                    if target_text:
+                        system_logger.info(f"Attempting OCR fallback for target text: '{target_text}'")
+                        ocr_results = self.ocr_engine.find_text_coordinates(screenshot_path, target_text)
+                        if ocr_results:
+                            # For simplicity, click the center of the first found text
+                            bbox = ocr_results[0]["bbox"]
+                            click_x = bbox["x"] + bbox["width"] // 2
+                            click_y = bbox["y"] + bbox["height"] // 2
+                            system_logger.info(f"OCR found '{target_text}' at ({click_x}, {click_y}). Clicking...")
+                            self.hands.click_humanlike(click_x, click_y)
+                            await asyncio.sleep(2) # Natural pause after OCR click
+                            continue # Continue to the next step after successful OCR click
+                        else:
+                            system_logger.warning(f"OCR fallback failed to find '{target_text}'.")
+
                     if retry_count < max_retries:
                         retry_count += 1
                         system_logger.info(f"Retrying step {step+1} (Attempt {retry_count}/{max_retries})...")

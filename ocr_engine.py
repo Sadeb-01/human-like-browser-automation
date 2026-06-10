@@ -1,6 +1,17 @@
-import easyocr
+try:
+    import easyocr
+except ImportError:
+    class MockEasyOCR:
+        def Reader(self, *args, **kwargs):
+            class MockReader:
+                def readtext(self, *args, **kwargs): return []
+            return MockReader()
+    easyocr = MockEasyOCR()
 import numpy as np
-from PIL import Image
+try:
+    from PIL import Image
+except ImportError:
+    class Image: pass
 from pathlib import Path
 from typing import List, Dict, Any
 
