@@ -44,7 +44,12 @@ class HumanAutomationOrchestrator:
 
     async def startup(self):
         """Initialize all components."""
-        await self.body.initialize()
+        await self.body.initialize(
+            use_xvfb=self.config.browser.use_xvfb,
+            xvfb_display=self.config.browser.xvfb_display,
+            xvfb_width=self.config.browser.xvfb_width,
+            xvfb_height=self.config.browser.xvfb_height
+        )
         
         # Perform initial proxy health checks if pool is configured
         if self.identity.proxy_pool:

@@ -7,6 +7,8 @@ It handles browser initialization, page navigation, and screenshot capture.
 
 import asyncio
 import os
+import subprocess
+import time
 from datetime import datetime
 from pathlib import Path
 from typing import Optional, Dict, Any
@@ -50,6 +52,11 @@ class BrowserController:
         self.disable_blink_features = disable_blink_features
         self.storage_state_path = Path(storage_state_path) if storage_state_path else None
         
+        # Xvfb state
+        self.use_xvfb = False
+        self.xvfb_process = None
+        self.xvfb_display = ":99"
+        
         self.browser: Optional[Browser] = None
         self.context: Optional[BrowserContext] = None
         self.page: Optional[Page] = None
@@ -66,8 +73,23 @@ class BrowserController:
             "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
         )
     
-    async def initialize(self) -> None:
+    async def initialize(self, use_xvfb: bool = False, xvfb_display: str = ":99", xvfb_width: int = 1920, xvfb_height: int = 1080) -> None:
         """Initialize the Playwright browser instance."""
+        self.use_xvfb = use_xvfb
+        self.xvfb_display = xvfb_display
+
+        if self.use_xvfb:
+            print(f"Starting Xvfb on display {self.xvfb_display} ({xvfb_width}x{xvfb_height})...")
+            self.xvfb_process = subprocess.Popen(
+                ["Xvfb", self.xvfb_display, "-screen", "0", f"{xvfb_width}x{xvfb_height}x24"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+            os.environ["DISPLAY"] = self.xvfb_display
+            # Give Xvfb a moment to start
+            time.sleep(2)
+            print(f"✓ Xvfb started on {self.xvfb_display}")
+
         self.playwright = await async_playwright().start()
         
         # Prepare launch arguments
@@ -226,6 +248,12 @@ class BrowserController:
         if self.playwright:
             await self.playwright.stop()
         
+        if self.xvfb_process:
+            print("Stopping Xvfb...")
+            self.xvfb_process.terminate()
+            self.xvfb_process.wait()
+            print("✓ Xvfb stopped")
+            
         if self.storage_state_path:
             await self.save_storage_state()
         print("✓ Browser closed")

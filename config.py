@@ -30,6 +30,12 @@ class BrowserConfig:
     # Timeout settings (in milliseconds)
     navigation_timeout: int = 30000
     action_timeout: int = 10000
+    
+    # Virtual Display settings
+    use_xvfb: bool = False
+    xvfb_display: str = ":99"
+    xvfb_width: int = 1920
+    xvfb_height: int = 1080
 
 
 @dataclass
@@ -100,6 +106,10 @@ class SystemConfig:
                 viewport_height=int(os.getenv("VIEWPORT_HEIGHT", "1080")),
                 disable_automation_features=os.getenv("DISABLE_AUTOMATION_FEATURES", "true").lower() == "true",
                 storage_state_path=os.getenv("BROWSER_STORAGE_STATE_PATH"),
+                use_xvfb=os.getenv("USE_XVFB", "false").lower() == "true",
+                xvfb_display=os.getenv("XVFB_DISPLAY", ":99"),
+                xvfb_width=int(os.getenv("XVFB_WIDTH", "1920")),
+                xvfb_height=int(os.getenv("XVFB_HEIGHT", "1080")),
             ),
             vlm=VLMConfig(
                 provider=os.getenv("VLM_PROVIDER", "deepseek"),

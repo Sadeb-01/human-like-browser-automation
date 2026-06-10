@@ -7,9 +7,20 @@ This guide outlines the professional infrastructure and advanced techniques requ
 To run a non-headless (headed) browser on a server without a physical monitor, you must implement a virtual display environment. This allows the browser to render "headfully" in memory while appearing to the operating system as if it is displayed on a real screen.
 
 ### Virtual Display Stack
+The system now includes **built-in Xvfb integration**. The `BrowserController` can automatically manage the Xvfb process, eliminating the need for manual setup.
+
 - **Xvfb (X Virtual Framebuffer):** Creates a virtual display in system memory. This is the most critical component for running headed browsers on a VPS.
-- **Fluxbox or Openbox:** A lightweight window manager to handle browser windows within the virtual display.
+- **Fluxbox or Openbox:** (Recommended) A lightweight window manager to handle browser windows within the virtual display.
 - **x11vnc & noVNC:** (Optional) Allows you to remotely view the virtual display in your own browser for debugging and monitoring.
+
+To enable the built-in Xvfb support, set the following environment variables:
+
+```bash
+export USE_XVFB=true
+export XVFB_DISPLAY=:99
+export XVFB_WIDTH=1920
+export XVFB_HEIGHT=1080
+```
 
 | Component | Recommendation | Purpose |
 | :--- | :--- | :--- |
