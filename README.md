@@ -34,8 +34,8 @@ This section outlines the current status of key features and planned upgrades.
 | **Docker Containerization** | ⬜ To Do | Create Dockerfiles for easy deployment. |
 | **Advanced Proxy Management** | ✅ Completed | Implemented proxy rotation and health checks. |
 | **TLS/HTTP2 Fingerprint Rotation** | ✅ Completed | Implemented via `curl_cffi` in Phase 4. |
-| **Canvas/WebGL Noise** | ⬜ To Do | Advanced hardware fingerprint spoofing. |
-| **Font Fingerprint Randomization** | ⬜ To Do | Further anti-detection measures. |
+| **Canvas/WebGL Noise** | ✅ Completed | Advanced hardware fingerprint spoofing via JS injection. |
+| **Font Fingerprint Randomization** | ✅ Completed | Randomized font metrics to prevent tracking. |
 | **Self-Correction Logic** | 🟡 Partially Done | Basic AI-driven error recovery and retry logic implemented. |
 | **Local VLM Hosting** | ⬜ To Do | Option to run DeepSeek-VL2 locally for performance/cost. |
 | **OpenClaw Full Integration** | ✅ Completed | Orchestration framework is in place, with task memory for persistence. |

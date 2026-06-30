@@ -52,6 +52,10 @@ class BrowserController:
         self.disable_blink_features = disable_blink_features
         self.storage_state_path = Path(storage_state_path) if storage_state_path else None
         
+        # Fingerprint Spoofing
+        self.inject_fingerprint_noise = True
+        self.fingerprint_script_path = Path(__file__).parent / "scripts" / "fingerprint_spoof.js"
+        
         # Xvfb state
         self.use_xvfb = False
         self.xvfb_process = None
@@ -73,10 +77,18 @@ class BrowserController:
             "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
         )
     
-    async def initialize(self, use_xvfb: bool = False, xvfb_display: str = ":99", xvfb_width: int = 1920, xvfb_height: int = 1080) -> None:
+    async def initialize(
+        self, 
+        use_xvfb: bool = False, 
+        xvfb_display: str = ":99", 
+        xvfb_width: int = 1920, 
+        xvfb_height: int = 1080,
+        inject_fingerprint_noise: bool = True
+    ) -> None:
         """Initialize the Playwright browser instance."""
         self.use_xvfb = use_xvfb
         self.xvfb_display = xvfb_display
+        self.inject_fingerprint_noise = inject_fingerprint_noise
 
         if self.use_xvfb:
             print(f"Starting Xvfb on display {self.xvfb_display} ({xvfb_width}x{xvfb_height})...")
@@ -126,6 +138,13 @@ class BrowserController:
         
         # Create a new page
         self.page = await self.context.new_page()
+        
+        # Inject Fingerprint Spoofing Script if enabled
+        if self.inject_fingerprint_noise and self.fingerprint_script_path.exists():
+            with open(self.fingerprint_script_path, 'r') as f:
+                script_content = f.read()
+            await self.context.add_init_script(script_content)
+            print("✓ Fingerprint spoofing script injected")
         
         print(f"✓ Browser initialized ({self.browser_type}, headless={self.headless})")
     

@@ -36,6 +36,9 @@ class BrowserConfig:
     xvfb_display: str = ":99"
     xvfb_width: int = 1920
     xvfb_height: int = 1080
+    
+    # Fingerprint Spoofing
+    inject_fingerprint_noise: bool = True
 
 
 @dataclass
@@ -110,6 +113,7 @@ class SystemConfig:
                 xvfb_display=os.getenv("XVFB_DISPLAY", ":99"),
                 xvfb_width=int(os.getenv("XVFB_WIDTH", "1920")),
                 xvfb_height=int(os.getenv("XVFB_HEIGHT", "1080")),
+                inject_fingerprint_noise=os.getenv("INJECT_FINGERPRINT_NOISE", "true").lower() == "true",
             ),
             vlm=VLMConfig(
                 provider=os.getenv("VLM_PROVIDER", "deepseek"),
