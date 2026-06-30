@@ -31,7 +31,7 @@ This section outlines the current status of key features and planned upgrades.
 | :--- | :--- | :--- |
 | **Core System (Phases 1-5)** | ✅ Completed | All foundational components are implemented and integrated. |
 | **Virtual Display Integration** | ✅ Completed | Integrated with Xvfb for headless environments and VPS deployment. |
-| **Docker Containerization** | ⬜ To Do | Create Dockerfiles for easy deployment. |
+| **Docker Containerization** | ✅ Completed | Fully containerized with Playwright, Xvfb, and all dependencies. |
 | **Advanced Proxy Management** | ✅ Completed | Implemented proxy rotation and health checks. |
 | **TLS/HTTP2 Fingerprint Rotation** | ✅ Completed | Implemented via `curl_cffi` in Phase 4. |
 | **Canvas/WebGL Noise** | ✅ Completed | Advanced hardware fingerprint spoofing via JS injection. |
@@ -75,6 +75,16 @@ For basic functionality without OS-level input simulation, you can comment out o
 - Residential proxy credentials (for Phase 4+)
 
 ## Usage
+
+### Local Execution
+```bash
+python3 orchestrator.py
+```
+
+### Docker Execution
+```bash
+docker-compose up --build
+```
 
 See `docs/` directory for detailed usage instructions for each phase.
 

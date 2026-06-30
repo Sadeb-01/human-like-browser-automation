@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  browser-automation:
+    build: .
+    container_name: human_browser_automation
+    volumes:
+      - ./screenshots:/app/screenshots
+      - ./logs:/app/logs
+    environment:
+      - VLM_PROVIDER=deepseek
+      - VLM_MODEL=deepseek-vl2
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+      - BROWSER_HEADLESS=false
+      - USE_XVFB=true
+      - XVFB_DISPLAY=:99
+      - XVFB_WIDTH=1920
+      - XVFB_HEIGHT=1080
+    restart: unless-stopped

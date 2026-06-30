@@ -46,9 +46,15 @@ To maintain high reputation and avoid bans in production, the following upgrades
 The best method for deploying this system is using **Docker** with a specialized configuration that supports X11 forwarding.
 
 ### Docker Deployment Steps
-1. **Containerize:** Create a Dockerfile that includes the Chromium engine, Xvfb, and all Python dependencies.
-2. **Supervisord:** Use `supervisord` to manage the lifecycle of Xvfb, the window manager, and the automation script within the container.
-3. **Volume Mapping:** Map local directories for screenshots, logs, and persistent browser profiles to ensure data persistence across container restarts.
+The system is fully containerized. To deploy:
+
+1.  **Configure Environment:** Create a `.env` file with your `DEEPSEEK_API_KEY` and other settings.
+2.  **Build and Run:** Use Docker Compose to build and start the container:
+    ```bash
+    docker-compose up --build -d
+    ```
+3.  **Volume Management:** The `docker-compose.yml` automatically maps `./screenshots` and `./logs` to ensure your data is persistent across container restarts.
+4.  **Xvfb Handling:** The container includes a built-in Xvfb server that starts automatically via the `entrypoint.sh` script, providing the necessary graphical environment for human-like input simulation.
 
 ## 4. Feature Upgrades (The "Evolution")
 
